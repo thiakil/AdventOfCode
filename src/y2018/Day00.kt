@@ -2,7 +2,7 @@ package y2018
 
 import util.*
 
-private class Day00 : Day(2018){
+class Day00 : Day(2018){
 
     val parser = { it:List<String>->
         it

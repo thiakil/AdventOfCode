@@ -2,7 +2,7 @@ package y2018
 
 import util.*
 
-private class Day13 : Day(2018){
+class Day13 : Day(2018){
 
     enum class TrackType{
         NONE, VERTICAL, HORIZONTAL, CORNER_TOP_LEFT, CORNER_TOP_RIGHT, CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, JUNCTION
