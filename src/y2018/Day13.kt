@@ -127,8 +127,8 @@ private class Day13 : Day(2018){
         val myCarts = carts.map { it.copy() }.toMutableList()
         var iters = 0
         while (true){
-            carts.sortBy { it.location }
-            carts.forEach { it.movedThisTick = false }
+            myCarts.sortBy { it.location }
+            myCarts.forEach { it.movedThisTick = false }
             iters++
             for (cart in myCarts){
                 cart.advance(tracks)
