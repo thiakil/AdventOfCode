@@ -12,7 +12,7 @@ class Day13 : Day(2018){
         LEFT,STRAIGHT,RIGHT
     }
 
-    data class Cart(var location: Point2D, var direction: CompassDirection4, var movedThisTick: Boolean = false){
+    data class Cart(var location: Point2D, var direction: CompassDirection4, var crashed: Boolean = false){
         constructor(x: Int, y:Int, direction: CompassDirection4): this(Point2D(x, y), direction)
         var junctionTurns = 0
 
@@ -110,12 +110,13 @@ class Day13 : Day(2018){
     }
 
     val doTest = 0
-    val testData = ("/->-\\        \n" +
-            "|   |  /----\\\n" +
-            "| /-+--+-\\  |\n" +
-            "| | |  | v  |\n" +
-            "\\-+-/  \\-+--/\n" +
-            "  \\------/   ").split("\n")
+    val testData = ("/>-<\\  \n" +
+            "|   |  \n" +
+            "| /<+-\\\n" +
+            "| | | v\n" +
+            "\\>+</ |\n" +
+            "  |   ^\n" +
+            "  \\<->/").split("\n")
     val parsedLines = parser(when(doTest){
         0 -> lines
         else -> testData
@@ -128,15 +129,12 @@ class Day13 : Day(2018){
         var iters = 0
         while (true){
             myCarts.sortBy { it.location }
-            myCarts.forEach { it.movedThisTick = false }
             iters++
             for (cart in myCarts){
                 cart.advance(tracks)
-                if (myCarts.any { it.movedThisTick && it !== cart && it.location== cart.location }){
-                    println(iters)
+                if (myCarts.any { it !== cart && it.location== cart.location }){
                     return cart.location
                 }
-                cart.movedThisTick = true
             }
             /*val crashed = myCarts.filter { cart -> myCarts.any { it !== cart && it.location== cart.location } }.sortedBy { it.location }
             if (crashed.isNotEmpty()){
@@ -147,7 +145,32 @@ class Day13 : Day(2018){
     }
 
     override fun part2(): Any {
-        return "incomplete"
+        val myCarts = carts.map { it.copy() }.toMutableList()
+        var iters = 0
+        while (myCarts.size > 1){
+            myCarts.sortBy { it.location }
+            iters++
+            for (cart in myCarts){
+                if (cart.crashed)
+                    continue
+                cart.advance(tracks)
+                if (myCarts.any { it !== cart && it.location== cart.location }){
+                    cart.crashed = true
+                }
+                myCarts.filter { !it.crashed && it !== cart && it.location == cart.location }.sortedBy { it.location }
+                    .forEach {
+                    //println("Crashed ${it.location}")
+                    it.crashed = true
+                }
+            }
+            //val prevsize = myCarts.size
+            myCarts.removeIf { it.crashed }
+            //if (prevsize != myCarts.size)
+            //    println("newsize ${myCarts.size}")
+        }
+        val lastCart = myCarts.first()
+
+        return lastCart.location
     }
 
     companion object {
