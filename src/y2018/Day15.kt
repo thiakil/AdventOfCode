@@ -9,16 +9,22 @@ class Day15 : Day(2018){
         Open,Wall
     }
 
-    class Creature(val type: Char, var pos: Point2D, var hp: Int = 200){
+    inner class Creature(val type: Char, var pos: Point2D, var hp: Int = 200){
         val targetType = when(type){
             'G' -> 'E'
             'E' -> 'G'
             else -> throw IllegalStateException()
         }
         val attackPower = 3
+        val space get() = spaces[this.pos]!!
+
+        val canAttack get() = this.space.adjacents.sortedBy { it.pos }.any { it.creature?.type == this.targetType }
+        fun doAttack() { this.space.adjacents.sortedBy { it.pos }.filter { it.creature?.type == this.targetType }.minBy { it.creature!!.hp }!!.creature!!.hp -= this.attackPower }
     }
 
     val creatures = mutableListOf<Creature>()
+    operator fun List<Creature>.get(type: Char): List<Creature> = creatures.filter { it.type == type && it.hp > 0 }
+    operator fun List<Creature>.get(key: Point2D): Creature? = creatures.find { it.pos == key && it.hp > 0 }
 
     inner class OpenSpaceNode(val pos: Point2D){
         val adjacents = mutableListOf<OpenSpaceNode>()
@@ -28,6 +34,8 @@ class Day15 : Day(2018){
         val east = pos+Point2D(1, 0)
         val west = pos+Point2D(-1, 0)
         val south = pos+Point2D(0, 1)
+
+        val creature get() = creatures.find { it.pos == this.pos && it.hp > 0 }
 
         fun findPathTo(target: Point2D): List<Point2D>?{
             if (this.adjacentPoints.filter { spaces[it]!!.creature == null }.contains(target)){
@@ -78,16 +86,7 @@ class Day15 : Day(2018){
         override fun hashCode(): Int {
             return pos.hashCode()
         }
-
-
     }
-
-    val OpenSpaceNode.creature get() = creatures.find { it.pos == this.pos && it.hp > 0 }
-
-    operator fun List<Creature>.get(type: Char): List<Creature> = creatures.filter { it.type == type && it.hp > 0 }
-    operator fun List<Creature>.get(key: Point2D): Creature? = creatures.find { it.pos == key }
-
-    val Creature.space get() = spaces[this.pos]!!
 
     val parser = { it:List<String>->
         it.mapIndexed { row,line ->line.mapIndexed { col,char-> when(char){
@@ -152,9 +151,6 @@ class Day15 : Day(2018){
         println("--------------------------------------------")
         System.out.flush()
     }
-
-    val Creature.canAttack get() = this.space.adjacents.sortedBy { it.pos }.any { it.creature?.type == this.targetType }
-    fun Creature.doAttack() { this.space.adjacents.sortedBy { it.pos }.filter { it.creature?.type == this.targetType }.minBy { it.creature!!.hp }!!.creature!!.hp -= this.attackPower }
 
     override fun part1(): Any {
         var rounds = 0
