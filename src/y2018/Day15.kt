@@ -53,9 +53,9 @@ class Day15 : Day(2018){
                     return path
                 } else {
                     closedNodes.add(testNode.pos)
-                    testNode.adjacents.filter { !closedNodes.contains(it.pos) && it.creature == null }.forEach {newNode->
+                    testNode.adjacents.filter { !closedNodes.contains(it.pos) && it.creature == null }.sortedBy { it.pos }.forEach {newNode->
                         openNodes.add(newNode)
-                        if (!addedBy.containsKey(newNode.pos) || addedBy[newNode.pos]!!.manhattanDistanceFrom(target) >= testNode.pos.manhattanDistanceFrom(target)){
+                        if (!addedBy.containsKey(newNode.pos) /*|| addedBy[newNode.pos]!!.manhattanDistanceFrom(target) >= testNode.pos.manhattanDistanceFrom(target)*/){
                             addedBy[newNode.pos] = testNode.pos
                         }
                     }
@@ -99,22 +99,23 @@ class Day15 : Day(2018){
         } } }
     }
     /*
-    #######       #######
-    #G..#E#       #...#E#      E(200)
-    #E#E.E#       #E#...#      E(197)
-    #G.##.#  -->  #.E##.#      E(185)
-    #...#E#       #E..#E#      E(200), E(200)
-    #...E.#       #.....#
-    #######       #######
+    #######
+    #.G...#   G(200)
+    #...EG#   E(200), G(200)
+    #.#.#G#   G(200)
+    #..G#E#   G(200), E(200)
+    #.....#
+    #######
+
      */
 
     val doTest = 1
     val testData = ("#######\n" +
-            "#G..#E#\n" +
-            "#E#E.E#\n" +
-            "#G.##.#\n" +
-            "#...#E#\n" +
-            "#...E.#\n" +
+            "#.G...#\n" +
+            "#...EG#\n" +
+            "#.#.#G#\n" +
+            "#..G#E#\n" +
+            "#.....#\n" +
             "#######").split("\n")
     val parsedLines = parser(when(doTest){
         0 -> lines
@@ -136,16 +137,17 @@ class Day15 : Day(2018){
 
     fun printGrid(){
         for (y in 0 until parsedLines.size){
+            val hps = mutableListOf<Creature>()
             for (x in 0 until parsedLines[y].size){
                 when (parsedLines[y][x]){
                     SquareType.Wall -> print('#')
                     SquareType.Open -> print(when(val c = spaces[Point2D(x,y)]!!.creature){
                         null -> '.'
-                        else -> c.type
+                        else -> {hps.add(c); c.type}
                     })
                 }
             }
-            println()
+            println("\t"+(hps.joinToString { "${it.type}:${it.hp}" }))
         }
         println("--------------------------------------------")
         System.out.flush()
@@ -159,6 +161,8 @@ class Day15 : Day(2018){
         while (creatures['E'].isNotEmpty() && creatures['G'].isNotEmpty()){
             var validTargetFound = false
             creatures.filter { it.hp > 0 }.sortedBy { it.pos }.forEach { creature ->
+                if (creature.hp <1)//died during round
+                    return@forEach
                 if (creature.canAttack ){
                     creature.doAttack()
                     validTargetFound = true
@@ -183,19 +187,15 @@ class Day15 : Day(2018){
                     }*/
                 }
             }
-            //printGrid()
             if (!validTargetFound || creatures['E'].isEmpty() || creatures['G'].isEmpty()){
                 break//stalemate or all targets neutralised
             }
             rounds++
-            println("Round $rounds, ${creatures['E'].size} Elves, ${creatures['G'].size} Goblins remain")
+            //println("Round $rounds, ${creatures['E'].size} Elves, ${creatures['G'].size} Goblins remain")
+            //printGrid()
         }
-        printGrid()
         println("Total Rounds $rounds, ${creatures['E'].size} Elves, ${creatures['G'].size} Goblins remain")
-        creatures.forEach {
-            if (it.hp > 0)
-                println(it.hp)
-        }
+        printGrid()
         return (creatures['E'].sumBy { it.hp }+creatures['G'].sumBy { it.hp })*rounds
     }
 
