@@ -42,8 +42,8 @@ private class Day16 : util.Day(2017){
 
         override fun hashCode(): Int {
             var result = id.hashCode()
-            result = 31 * result + (next?.id.hashCode() ?: 0)
-            result = 31 * result + (prev?.id.hashCode() ?: 0)
+            result = 31 * result + (next?.id?.hashCode() ?: 0)
+            result = 31 * result + (prev?.id?.hashCode() ?: 0)
             return result
         }
 
